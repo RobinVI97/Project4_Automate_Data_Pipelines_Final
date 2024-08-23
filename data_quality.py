@@ -24,14 +24,21 @@ class DataQualityOperator(BaseOperator):
 
     def execute(self, context):
         redshift_hook = PostgresHook(self.redshift_conn_id)
-        for table in self.tables:
-            records = redshift_hook.get_records(f"SELECT COUNT(*) FROM {table}")
-            if len(records) < 1 or len(records[0]) < 1:
+        for table_column_tuple in self.table_column_tuples:
+            table = table_column_tuple['table']
+            expected_value = table_column_tuple['expected_value']
+            query = f"SELECT COUNT(*) FROM {table}"
+            records = redshift_hook.get_records(query)
+            if len(records) == expected_value or len(records[0]) == expected_value:
                 raise ValueError(f"Data quality check failed. {table} returned no results")
             logging.info(f"Data quality on table {table} check passed with {records[0][0]} records")
-        for table_column_tuples in self.table_column_tuples:
-            for table, field in table_column_tuples.items():
-                null_records = redshift_hook.get_records(f"SELECT COUNT(*) FROM {table} where {field} is null")
-                if len(null_records) < 1 or len(null_records[0]) < 1:
-                    raise ValueError(f"Data quality check failed. {table} returned NULL values in field {field}")
-                logging.info(f"Data quality on table {table} and field {field}check passed with no NULL values")    
+        for table_column_tuple in self.table_column_tuples:
+            table = table_column_tuple['table']
+            field = table_column_tuple['field']
+            expected_value = table_column_tuple['expected_value']
+            null_records = redshift_hook.get_records(f"SELECT COUNT(*) FROM {table} where {field} is null")
+            if len(null_records) > expected_value or len(null_records[0]) > expected_value:
+                raise ValueError(f"Data quality check failed. {table} returned NULL values in field {field}")
+            logging.info(f"Data quality on table {table} and field {field}check passed with no NULL values")    
+
+
