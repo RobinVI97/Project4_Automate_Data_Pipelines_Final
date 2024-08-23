@@ -71,7 +71,8 @@ def final_project():
         table="user_dim",
         redshift_conn_id="redshift",
         aws_credentials_id="aws_credentials",
-        sql=SqlQueries.user_table_insert
+        sql=SqlQueries.user_table_insert,
+        operation="truncate"
     )
 
     load_song_dimension_table = LoadDimensionOperator(
@@ -79,7 +80,8 @@ def final_project():
         table="song_dim",
         redshift_conn_id="redshift",
         aws_credentials_id="aws_credentials",
-        sql=SqlQueries.song_table_insert
+        sql=SqlQueries.song_table_insert,
+        operation="truncate"
     )
 
     load_artist_dimension_table = LoadDimensionOperator(
@@ -87,7 +89,8 @@ def final_project():
         table="artist_dim",
         redshift_conn_id="redshift",
         aws_credentials_id="aws_credentials",
-        sql=SqlQueries.artist_table_insert
+        sql=SqlQueries.artist_table_insert,
+        operation="truncate"
     )
 
     load_time_dimension_table = LoadDimensionOperator(
@@ -95,7 +98,8 @@ def final_project():
         table="time_dim",
         redshift_conn_id="redshift",
         aws_credentials_id="aws_credentials",
-        sql=SqlQueries.time_table_insert
+        sql=SqlQueries.time_table_insert,
+        operation="truncate"
     )
 
     run_quality_checks = DataQualityOperator(
@@ -104,8 +108,11 @@ def final_project():
         aws_credentials_id="aws_credentials",
         tables=["public.user_dim", "public.song_dim", "public.artist_dim", "public.time_dim"],
         table_column_tuples=[
-            {'public.user_dim': 'user_id'}, {'public.song_dim': 'song_id'},
-            {'public.artist_dim': 'artist_id'}, {'public.time_dim': 'start_time'}]
+            {'table': 'public.user_dim', 'field': 'user_id', 'expected_value': 0}, 
+            {'table': 'public.song_dim', 'field': 'song_id', 'expected_value': 0},
+            {'table': 'public.artist_dim', 'field': 'artist_id', 'expected_value': 0}, 
+            {'table': 'public.time_dim', 'field': 'start_time', 'expected_value': 0}
+        ]
     )
 
     end_execution = DummyOperator(task_id='End_execution')
