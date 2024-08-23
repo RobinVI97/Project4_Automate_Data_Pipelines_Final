@@ -20,9 +20,6 @@ class StageToRedshiftOperator(BaseOperator):
                  table="",
                  s3_bucket="",
                  s3_key="",
-                 formt="",
-                 #delimiter=",",
-                 #ignore_headers=1,
                  copy_json_option='',
                  *args, **kwargs):
 
@@ -31,9 +28,6 @@ class StageToRedshiftOperator(BaseOperator):
         self.redshift_conn_id = redshift_conn_id
         self.s3_bucket = s3_bucket
         self.s3_key = s3_key
-        self.formt = formt
-        # self.delimiter = delimiter
-        # self.ignore_headers = ignore_headers
         self.aws_credentials_id = aws_credentials_id
         self.copy_json_option = copy_json_option
 
@@ -53,10 +47,7 @@ class StageToRedshiftOperator(BaseOperator):
             s3_path,
             credentials.access_key,
             credentials.secret_key,
-            #self.ignore_headers,
-            self.formt,
             self.copy_json_option,
-            # self.delimiter
         )
         redshift.run(formatted_sql)
 
